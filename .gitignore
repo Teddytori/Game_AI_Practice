@@ -1,6 +1,6 @@
 .vs
 Library
-.sln
-.csproj
+*.sln
+*.csproj
 Temp
 Logs
