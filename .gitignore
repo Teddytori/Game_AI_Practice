@@ -1,2 +1,6 @@
-.vs/
-Library/
+.vs
+Library
+.sln
+.csproj
+Temp
+Logs
