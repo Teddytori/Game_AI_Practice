@@ -9,8 +9,9 @@ public class Miner : BaseGameEntity
     private const int ThirstLevel = 5;
     private const int TirednessThreshold = 5;
 
-    private State currentState;
-    private Vector2 curLocation;
+    public WestWorldLocation CurLocation { get; private set; }
+    
+    private State<Miner> currentState;
     private int goldCarried;
     private int moneyInBank;
     private int thirst;
@@ -19,7 +20,7 @@ public class Miner : BaseGameEntity
     public Miner(int val) : base(val)
     {
         currentState = null;
-        curLocation = Vector2.zero;
+        CurLocation = WestWorldLocation.None;
         goldCarried = 0;
         moneyInBank = 0;
         thirst = 0;
@@ -34,15 +35,17 @@ public class Miner : BaseGameEntity
             currentState.Execute(this);
     }
 
-    public void ChangeState(State nextState)
+    public void ChangeState(State<Miner> nextState)
     {
-        if(currentState == null || nextState == null)
+        if(nextState == null)
         {
             Debug.LogError("State cannot be null");
             return;
         }
 
-        currentState.Exit(this);
+        if (currentState != null)
+            currentState.Exit(this);
+
         currentState = nextState;
         currentState.Enter(this);
     }
@@ -52,6 +55,11 @@ public class Miner : BaseGameEntity
         goldCarried += amount;
 
         if (goldCarried < 0) goldCarried = 0;
+    }
+
+    public bool IsPocketsFull()
+    {
+        return goldCarried >= MaxNuggets;
     }
 
     public void PutMoneyInBank(int amount)
@@ -69,5 +77,15 @@ public class Miner : BaseGameEntity
     public bool IsTired()
     {
         return fatigue >= TirednessThreshold;
+    }
+
+    public void IncreaseFatigue()
+    {
+        fatigue++;
+    }
+
+    public void ChangeLocation(WestWorldLocation destination)
+    {
+        CurLocation = destination;
     }
 }
