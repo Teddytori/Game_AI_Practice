@@ -73,6 +73,66 @@ public class VisitBankAndDepositGold : State<Miner>
 
     public override void Enter(Miner miner)
     {
+        //on entry the miner makes sure he is located at the bank
+        if (miner.CurLocation != WestWorldLocation.Bank)
+        {
+            miner.WriteLog("Goin' to the bank. Yes siree");
+            miner.ChangeLocation(WestWorldLocation.Bank);
+        }
+    }
+
+    public override void Execute(Miner miner)
+    {
+        //deposit the gold
+        miner.PutMoneyToBank(miner.GoldCarried);
+
+        miner.GoldCarried = 0;
+
+        miner.WriteLog("Depositing gold. Total savings now: " + miner.MoneyInBank);
+
+        //wealthy enough to have a well earned rest?
+        if (miner.MoneyInBank >= Miner.COMFORT_LEVEL)
+        {
+            miner.WriteLog("WooHoo! Rich enough for now. Back home to mah li'lle lady");
+
+            miner.ChangeState(GoHomeAndSleepTilRested.Instance);
+        }
+
+        //otherwise get more gold
+        else
+        {
+            miner.ChangeState(EnterMineAndDigForNugget.Instance);
+        }
+    }
+
+
+    public override void Exit(Miner miner)
+    {
+        miner.WriteLog("Leavin' the bank");
+    }
+}
+
+public class GoHomeAndSleepTilRested : State<Miner>
+{
+    private GoHomeAndSleepTilRested()
+    {
+
+    }
+
+    private static GoHomeAndSleepTilRested _instance;
+    public static GoHomeAndSleepTilRested Instance
+    {
+        get
+        {
+            if (_instance == null)
+                _instance = new GoHomeAndSleepTilRested();
+
+            return _instance;
+        }
+    }
+
+    public override void Enter(Miner miner)
+    {
         throw new NotImplementedException();
     }
 

@@ -4,84 +4,71 @@ using UnityEngine;
 
 public class Miner : BaseGameEntity
 {
-    private const int ComfortLevel = 5;
-    private const int MaxNuggets = 3;
-    private const int ThirstLevel = 5;
-    private const int TirednessThreshold = 5;
+    public const int COMFORT_LEVEL = 5;
+    public const int MAX_NUGGETS = 3;
+    public const int THIRST_LEVEL = 5;
+    public const int TIREDNESS_THRESHOLD = 5;
 
+    public int GoldCarried { get; set; }
+    public int MoneyInBank { get; private set; }
+    public int Thirst { get; private set; }
+    public int Fatigue { get; private set; }
     public WestWorldLocation CurLocation { get; private set; }
-    
-    private State<Miner> currentState;
-    private int goldCarried;
-    private int moneyInBank;
-    private int thirst;
-    private int fatigue;
+
+
+    private StateMachine<Miner> minerStateMachine;
 
     public Miner(int val) : base(val)
     {
-        currentState = null;
         CurLocation = WestWorldLocation.None;
-        goldCarried = 0;
-        moneyInBank = 0;
-        thirst = 0;
-        fatigue = 0;
+        GoldCarried = 0;
+        MoneyInBank = 0;
+        Thirst = 0;
+        Fatigue = 0;
+
+        minerStateMachine = new StateMachine<Miner>(this);
+        minerStateMachine.curState = GoHomeAndSleepTilRested.Instance;
     }
 
     public void Update()
     {
-        thirst += 1;
+        Thirst += 1;
 
-        if (currentState != null)
-            currentState.Execute(this);
-    }
-
-    public void ChangeState(State<Miner> nextState)
-    {
-        if(nextState == null)
-        {
-            Debug.LogError("State cannot be null");
-            return;
-        }
-
-        if (currentState != null)
-            currentState.Exit(this);
-
-        currentState = nextState;
-        currentState.Enter(this);
+        minerStateMachine.Update();
     }
 
     public void AddToGoldCarried(int amount)
     {
-        goldCarried += amount;
+        GoldCarried += amount;
 
-        if (goldCarried < 0) goldCarried = 0;
+        if (GoldCarried < 0) GoldCarried = 0;
     }
 
     public bool IsPocketsFull()
     {
-        return goldCarried >= MaxNuggets;
+        return GoldCarried >= MAX_NUGGETS;
     }
 
-    public void PutMoneyInBank(int amount)
+    public void PutMoneyToBank(int amount)
     {
-        moneyInBank += amount;
+        MoneyInBank += amount;
 
-        if (moneyInBank < 0) moneyInBank = 0;
+        if (MoneyInBank < 0) MoneyInBank = 0;
     }
 
     public bool IsThirsty()
     {
-        return thirst >= ThirstLevel;
+        return Thirst >= THIRST_LEVEL;
     }
 
     public bool IsTired()
     {
-        return fatigue >= TirednessThreshold;
+        return Fatigue >= TIREDNESS_THRESHOLD;
     }
 
     public void IncreaseFatigue()
     {
-        fatigue++;
+        Fatigue++;
     }
 
     public void ChangeLocation(WestWorldLocation destination)
