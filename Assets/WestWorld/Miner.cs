@@ -16,7 +16,7 @@ public class Miner : BaseGameEntity
     public WestWorldLocation CurLocation { get; private set; }
 
 
-    private StateMachine<Miner> minerStateMachine;
+    public StateMachine<Miner> minerStateMachine { get; private set; }
 
     public Miner(int val) : base(val)
     {
@@ -61,6 +61,12 @@ public class Miner : BaseGameEntity
         return Thirst >= THIRST_LEVEL;
     }
 
+    public void BuyAndDrinkAWhiskey()
+    {
+        Thirst = 0;
+        MoneyInBank -= 2;
+    }
+
     public bool IsTired()
     {
         return Fatigue >= TIREDNESS_THRESHOLD;
@@ -69,6 +75,13 @@ public class Miner : BaseGameEntity
     public void IncreaseFatigue()
     {
         Fatigue++;
+    }
+
+    public void DecreaseFatigue()
+    {
+        Fatigue -= 3;
+        if (Fatigue < 0)
+            Fatigue = 0;
     }
 
     public void ChangeLocation(WestWorldLocation destination)

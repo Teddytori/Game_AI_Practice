@@ -38,11 +38,11 @@ public class EnterMineAndDigForNugget : State<Miner>
         miner.WriteLog("Picking up a nugget");
         if (miner.IsPocketsFull())
         {
-            miner.ChangeState(null);
+            miner.minerStateMachine.ChangeState(VisitBankAndDepositGold.Insatance);
         }
         else if (miner.IsThirsty())
         {
-            miner.ChangeState(null);
+            miner.minerStateMachine.ChangeState(QuenchThirst.Instance);
         }
     }
 
@@ -94,14 +94,14 @@ public class VisitBankAndDepositGold : State<Miner>
         if (miner.MoneyInBank >= Miner.COMFORT_LEVEL)
         {
             miner.WriteLog("WooHoo! Rich enough for now. Back home to mah li'lle lady");
-
-            miner.ChangeState(GoHomeAndSleepTilRested.Instance);
+            
+            miner.minerStateMachine.ChangeState(GoHomeAndSleepTilRested.Instance);
         }
 
         //otherwise get more gold
         else
         {
-            miner.ChangeState(EnterMineAndDigForNugget.Instance);
+            miner.minerStateMachine.ChangeState(EnterMineAndDigForNugget.Instance);
         }
     }
 
@@ -133,16 +133,83 @@ public class GoHomeAndSleepTilRested : State<Miner>
 
     public override void Enter(Miner miner)
     {
-        throw new NotImplementedException();
+        if (miner.CurLocation != WestWorldLocation.Shack)
+        {
+            miner.WriteLog("Walkin' home");
+            miner.ChangeLocation(WestWorldLocation.Shack);
+        }
     }
 
     public override void Execute(Miner miner)
     {
-        throw new NotImplementedException();
+        //if miner is not fatigued start to dig for nuggets again.
+        if (miner.Fatigue > 0)
+        {
+            // sleep
+            miner.DecreaseFatigue();
+            miner.WriteLog("ZZZZ... ");
+        }
+        else
+        {
+            miner.WriteLog("What a God darn fantastic nap! Time to find more gold");
+            miner.minerStateMachine.ChangeState(EnterMineAndDigForNugget.Instance);
+        }
     }
 
     public override void Exit(Miner miner)
     {
-        throw new NotImplementedException();
+        miner.WriteLog("Leaving the house");
     }
 }
+
+public class QuenchThirst : State<Miner>
+{
+    private QuenchThirst()
+    {
+
+    }
+
+    private static QuenchThirst _instance;
+    public static QuenchThirst Instance
+    {
+        get
+        {
+            if (_instance == null)
+                _instance = new QuenchThirst();
+
+            return _instance;
+        }
+    }
+
+    public override void Enter(Miner miner)
+    {
+        if (miner.CurLocation != WestWorldLocation.Saloon)
+        {
+            miner.ChangeLocation(WestWorldLocation.Saloon);
+
+            miner.WriteLog("Boy, ah sure is thusty! Walking to the saloon");
+        }
+    }
+
+    public override void Execute(Miner miner)
+    {
+        if (miner.IsThirsty())
+        {
+            miner.BuyAndDrinkAWhiskey();
+
+            miner.WriteLog("That's mighty fine sippin' liquer");
+
+            miner.minerStateMachine.ChangeState(EnterMineAndDigForNugget.Instance);
+        }
+        else
+        {
+            throw new Exception("Not Thirsty?!");
+        }
+    }
+
+    public override void Exit(Miner miner)
+    {
+        miner.WriteLog("Leaving the saloon, feelin' good");
+    }
+}
+

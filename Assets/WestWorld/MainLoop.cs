@@ -13,23 +13,45 @@ public enum WestWorldLocation
 
 public class MainLoop : MonoBehaviour
 {
+    void Awake()
+    {
+        Application.logMessageReceived += LogCallBack;
+    }
+
+    private void LogCallBack(string condition, string stackTrace, LogType type)
+    {
+        switch (type)
+        {
+            case LogType.Exception:
+                Debug.Log("Exception Fired");
+                break;
+            case LogType.Error:
+                break;
+        }
+    }
+
     Miner Bob;
-    int loopCnt = 1;
+    int loopCnt = 0;
     // Start is called before the first frame update
     void Start()
     {
         Bob = new Miner(1);
-        Bob.ChangeState(EnterMineAndDigForNugget.Instance);
+        Bob.minerStateMachine.ChangeState(EnterMineAndDigForNugget.Instance);
     }
 
     // Update is called once per frame
     void Update()
     {
-        while(loopCnt <=  5)
+        while(loopCnt <  20)
         {
             Debug.Log("Turn: " + loopCnt);
             Bob.Update();
             loopCnt++;
         }
+    }
+
+    void OnDestroy()
+    {
+        Application.logMessageReceived -= LogCallBack;
     }
 }
